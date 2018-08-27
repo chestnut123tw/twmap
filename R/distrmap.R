@@ -1,13 +1,13 @@
-library(rgdal)
-require(raster)
-require(maptools)
+library("rgdal")
+library("raster")
+library("magrittr")
 
-distrmap = function (pts, boundary, col, vert_prof, cex=0.3, pch=19) {
+distrmap <- function (pts, boundary, col = "black", vert_prof, cex=0.3, pch=19) {
   vert_bound = 122.2; ly = 21.8; uy = 25.4; vmar = 0.1
-  basemap = function (boundary, vert_prof) {
-   
-    proj_wgs84 = "+proj=longlat +datum=WGS84 +no_defs"
-    tw_boundary = maptools::readShapeSpatial(boundary,proj4string = CRS(proj_wgs84))
+  basemap <- function (boundary, vert_prof) {
+    
+    proj_wgs84 <- "+proj=longlat +datum=WGS84 +no_defs"
+    tw_boundary <- readOGR(boundary,verbose = FALSE)
     #layout(matrix(c(1,2,1,2), 2, 2, byrow = TRUE), widths=c(1,0.8))
     plot(tw_boundary, col="white",border="#aaaaaa", 
          xlim=c(119.8, 123), ylim=c(21.5, 25.5), axes=FALSE)
@@ -41,19 +41,23 @@ distrmap = function (pts, boundary, col, vert_prof, cex=0.3, pch=19) {
       segments(vert_bound + i/4, ly, vert_bound + i/4, uy, col='grey', lty = 1) 
     }
     # draw latitude-elevation profile
-    vert_prof$z = vert_bound + (vert_prof$z/4000)
-    vf = cbind(vert_prof$z, vert_prof$y)
+    vert_prof$z <- vert_bound + (vert_prof$z/4000)
+    vf <- cbind(vert_prof$z, vert_prof$y)
     plot.xy(xy.coords(vf),  type='p', col='white', pch=19, cex=0.5)
     lines(vf, col='darkgrey')   
     box()
   }
-  draw_sp_pts = function(pts, col, cex=0.3, pch=19) {
+  draw_sp_pts <- function(pts, col, cex=0.3, pch=19) {
     if ( dim(pts)[2] != 3 ) {
       print('The input points should have x (longitude), y (latitude) and z (elevation)')
     } else {
-      horizon_pts = cbind(pts$x, pts$y); colnames(horizon_pts) = c('x', 'y')
-      pts$z = vert_bound + (pts$z/4000)
-      vert_pts = cbind(pts$z, pts$y); colnames(vert_pts) = c('z', 'y')
+      horizon_pts <- cbind(pts$x, pts$y)
+      colnames(horizon_pts) = c('x', 'y')
+      
+      pts$z <- vert_bound + (pts$z/4000)
+      vert_pts <- cbind(pts$z, pts$y)
+      colnames(vert_pts) = c('z', 'y')
+      
       plot.xy(xy.coords(horizon_pts), type='p', col=col, pch=pch, cex=cex)
       plot.xy(xy.coords(vert_pts), type='p', col=col, pch=pch, cex=cex)
     }
